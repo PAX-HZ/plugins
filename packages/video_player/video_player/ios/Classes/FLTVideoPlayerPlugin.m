@@ -17,6 +17,8 @@ int64_t FLTCMTimeToMillis(CMTime time) {
   return time.value * 1000 / time.timescale;
 }
 
+static NSString *kCacheScheme = @"__VIMediaCache___:";
+
 @interface FLTFrameUpdater : NSObject
 @property(nonatomic) int64_t textureId;
 @property(nonatomic, weak, readonly) NSObject<FlutterTextureRegistry>* registry;
@@ -170,11 +172,12 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
 
 - (instancetype)initWithURL:(NSURL*)url
                frameUpdater:(FLTFrameUpdater*)frameUpdater
-                enableCache:(BOOL)enableCache {
+                enableCache:(BOOL)enableCache
+                   cacheKey:(NSString*) cacheKey {
   AVPlayerItem* item;
   if (enableCache) {
     NSLog(@"initWithURL User cache");
-    item = [[FLTVideoPlayer resourceLoaderManager] playerItemWithURL:url];
+    item = [[FLTVideoPlayer resourceLoaderManager] playerItemWithURL:url key: cacheKey];
   } else {
     NSLog(@"initWithURL Not User cache");
     item = [AVPlayerItem playerItemWithURL:url];
@@ -552,6 +555,8 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
     BOOL enableCache = _maxCacheSize > 0 && _maxCacheFileSize > 0 && useCache;
     NSLog(@"Loading Url : %@", input.uri);
     NSLog(@"Loading params : %d , %@", useCache, input.cacheKey);
+    NSURL *assetURL = [NSURL URLWithString:[kCacheScheme stringByAppendingString:[url absoluteString]]];
+    NSLog(@"Loading Url : %@", [NSURL URLWithString:assetURL]);
     if (enableCache) {
       NSLog(@"User cache");
       // NSString* escapedURL = [input.uri
@@ -561,7 +566,8 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
 
       player = [[FLTVideoPlayer alloc] initWithURL:[NSURL URLWithString:input.uri]
                                       frameUpdater:frameUpdater
-                                       enableCache:enableCache];
+                                       enableCache:enableCache
+                                          cacheKey:input.cacheKey];
     } else {
       NSLog(@"Not user cache");
       player = [[FLTVideoPlayer alloc] initWithURL:[NSURL URLWithString:input.uri]
