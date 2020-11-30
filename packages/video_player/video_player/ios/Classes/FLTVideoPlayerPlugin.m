@@ -548,7 +548,9 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
   } else if (input.uri) {
     BOOL useCache = input.useCache;
     BOOL enableCache = _maxCacheSize > 0 && _maxCacheFileSize > 0 && useCache;
+    NSLog(@"Loading Url : %@", input.uri);
     if (enableCache) {
+      NSLog(@"User cache");
       NSString* escapedURL = [input.uri
           stringByAddingPercentEncodingWithAllowedCharacters:NSMutableCharacterSet
                                                                  .alphanumericCharacterSet];
@@ -557,6 +559,7 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
                                       frameUpdater:frameUpdater
                                        enableCache:enableCache];
     } else {
+      NSLog(@"Not user cache");
       player = [[FLTVideoPlayer alloc] initWithURL:[NSURL URLWithString:input.uri]
                                       frameUpdater:frameUpdater];
     }
