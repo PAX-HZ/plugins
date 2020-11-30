@@ -41,6 +41,7 @@ class MethodChannelVideoPlayer extends VideoPlayerPlatform {
         message.uri = dataSource.uri;
         message.formatHint = _videoFormatStringMap[dataSource.formatHint];
         message.useCache = dataSource.useCache;
+        message.cacheKey = dataSource.cacheKey;
         break;
       case DataSourceType.file:
         message.uri = dataSource.uri;

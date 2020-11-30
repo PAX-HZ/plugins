@@ -140,6 +140,16 @@ public class Messages {
       this.useCache = setterArg;
     }
 
+    private String cacheKey;
+
+    public String getCacheKey() {
+      return cacheKey;
+    }
+
+    public void setCacheKey(String cacheKey) {
+      this.cacheKey = cacheKey;
+    }
+
     HashMap toMap() {
       HashMap<String, Object> toMapResult = new HashMap<>();
       toMapResult.put("asset", asset);
@@ -147,6 +157,7 @@ public class Messages {
       toMapResult.put("packageName", packageName);
       toMapResult.put("formatHint", formatHint);
       toMapResult.put("useCache", useCache);
+      toMapResult.put("cacheKey", cacheKey);
       return toMapResult;
     }
 
@@ -162,6 +173,8 @@ public class Messages {
       fromMapResult.formatHint = (String) formatHint;
       Object useCache = map.get("useCache");
       fromMapResult.useCache = (Boolean) useCache;
+      Object cacheKey = map.get("cacheKey");
+      fromMapResult.cacheKey = (String) cacheKey;
       return fromMapResult;
     }
   }

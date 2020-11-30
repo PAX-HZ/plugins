@@ -175,6 +175,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
       : dataSourceType = DataSourceType.asset,
         formatHint = null,
         useCache = null,
+        cacheKey = '',
         super(VideoPlayerValue(duration: null));
 
   /// Constructs a [VideoPlayerController] playing a video from obtained from
@@ -191,10 +192,12 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     this.closedCaptionFile,
     this.videoPlayerOptions,
     bool useCache = false,
+    String cacheKey,
   })  : assert(useCache != null),
         dataSourceType = DataSourceType.network,
         package = null,
         useCache = useCache,
+        cacheKey = cacheKey,
         super(VideoPlayerValue(duration: null));
 
   /// Constructs a [VideoPlayerController] playing a video from a file.
@@ -210,6 +213,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
         package = null,
         formatHint = null,
         useCache = null,
+        cacheKey = '',
         super(VideoPlayerValue(duration: null));
 
   /// The maximum cache size to keep on disk in bytes.
@@ -240,6 +244,8 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
 
   /// Only set for [asset] videos. The package that the asset was loaded from.
   final String package;
+
+  final String cacheKey;
 
   /// Optional field to specify a file containing the closed
   /// captioning.

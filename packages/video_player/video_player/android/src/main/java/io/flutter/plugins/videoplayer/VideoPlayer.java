@@ -66,6 +66,8 @@ final class VideoPlayer {
 
   private final VideoPlayerOptions options;
 
+  private String cacheKey;
+
   VideoPlayer(
       Context context,
       EventChannel eventChannel,
@@ -75,10 +77,12 @@ final class VideoPlayer {
       VideoPlayerOptions options,
       long maxCacheSize,
       long maxCacheFileSize,
-      boolean useCache) {
+      boolean useCache,
+      String cacheKey) {
     this.eventChannel = eventChannel;
     this.textureEntry = textureEntry;
     this.options = options;
+    this.cacheKey = cacheKey;
 
     TrackSelector trackSelector = new DefaultTrackSelector();
     exoPlayer = ExoPlayerFactory.newSimpleInstance(context, trackSelector);
@@ -156,6 +160,7 @@ final class VideoPlayer {
       case C.TYPE_OTHER:
         return new ExtractorMediaSource.Factory(mediaDataSourceFactory)
             .setExtractorsFactory(new DefaultExtractorsFactory())
+                .setCustomCacheKey(cacheKey)
             .createMediaSource(uri);
       default:
         {

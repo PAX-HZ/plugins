@@ -154,6 +154,7 @@ class DataSource {
     this.asset,
     this.package,
     this.useCache = false,
+    this.cacheKey,
   }) : assert(useCache != null);
 
   /// The way in which the video was originally loaded.
@@ -181,6 +182,8 @@ class DataSource {
 
   /// Use cache for this data source or not. Used only for network data source.
   final bool useCache;
+
+  final String cacheKey;
 }
 
 /// The way in which the video was originally loaded.

@@ -146,7 +146,8 @@ public class VideoPlayerPlugin implements FlutterPlugin, VideoPlayerApi {
               options,
               maxCacheSize,
               maxCacheFileSize,
-              false);
+              false,
+              "");
       videoPlayers.put(handle.id(), player);
     } else {
       player =
@@ -159,7 +160,8 @@ public class VideoPlayerPlugin implements FlutterPlugin, VideoPlayerApi {
               options,
               maxCacheSize,
               maxCacheFileSize,
-              arg.getUseCache());
+              arg.getUseCache(),
+              arg.getCacheKey());
       videoPlayers.put(handle.id(), player);
     }
 
