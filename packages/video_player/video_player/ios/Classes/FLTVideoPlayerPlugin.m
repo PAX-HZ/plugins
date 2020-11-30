@@ -173,8 +173,10 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
                 enableCache:(BOOL)enableCache {
   AVPlayerItem* item;
   if (enableCache) {
+    NSLog(@"initWithURL User cache");
     item = [[FLTVideoPlayer resourceLoaderManager] playerItemWithURL:url];
   } else {
+    NSLog(@"initWithURL Not User cache");
     item = [AVPlayerItem playerItemWithURL:url];
   }
   return [self initWithPlayerItem:item frameUpdater:frameUpdater];
@@ -552,12 +554,12 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
     NSLog(@"Loading params : %d", useCache);
     if (enableCache) {
       NSLog(@"User cache");
-      NSString* escapedURL = [input.uri
-          stringByAddingPercentEncodingWithAllowedCharacters:NSMutableCharacterSet
-                                                                 .alphanumericCharacterSet];
-      NSLog(@"Loading Url : %@", escapedURL);
+      // NSString* escapedURL = [input.uri
+      //     stringByAddingPercentEncodingWithAllowedCharacters:NSMutableCharacterSet
+      //                                                            .alphanumericCharacterSet];
+      // NSLog(@"Loading Url : %@", escapedURL);
 
-      player = [[FLTVideoPlayer alloc] initWithURL:[NSURL URLWithString:escapedURL]
+      player = [[FLTVideoPlayer alloc] initWithURL:[NSURL URLWithString:input.uri]
                                       frameUpdater:frameUpdater
                                        enableCache:enableCache];
     } else {
