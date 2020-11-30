@@ -310,6 +310,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
           uri: dataSource,
           formatHint: formatHint,
           useCache: useCache,
+          cacheKey: cacheKey,
         );
         break;
       case DataSourceType.file:
