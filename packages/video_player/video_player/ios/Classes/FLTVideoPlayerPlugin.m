@@ -165,7 +165,7 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
 }
 
 - (instancetype)initWithURL:(NSURL*)url frameUpdater:(FLTFrameUpdater*)frameUpdater {
-  return [self initWithURL:url frameUpdater:frameUpdater enableCache:NO];
+  return [self initWithURL:url frameUpdater:frameUpdater enableCache:NO cahceKey: ""];
 }
 
 - (instancetype)initWithURL:(NSURL*)url
