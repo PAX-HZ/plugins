@@ -17,8 +17,6 @@ int64_t FLTCMTimeToMillis(CMTime time) {
   return time.value * 1000 / time.timescale;
 }
 
-static NSString *kCacheScheme = @"__VIMediaCache___:";
-
 @interface FLTFrameUpdater : NSObject
 @property(nonatomic) int64_t textureId;
 @property(nonatomic, weak, readonly) NSObject<FlutterTextureRegistry>* registry;
@@ -555,8 +553,6 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
     BOOL enableCache = _maxCacheSize > 0 && _maxCacheFileSize > 0 && useCache;
     NSLog(@"Loading Url : %@", input.uri);
     NSLog(@"Loading params : %d , %@", useCache, input.cacheKey);
-    NSURL *assetURL = [NSURL URLWithString:[kCacheScheme stringByAppendingString:[url absoluteString]]];
-    NSLog(@"Loading Url : %@", [NSURL URLWithString:assetURL]);
     if (enableCache) {
       NSLog(@"User cache");
       // NSString* escapedURL = [input.uri
