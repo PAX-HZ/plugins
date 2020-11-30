@@ -114,6 +114,10 @@ static NSDictionary *wrapResult(NSDictionary *result, FlutterError *error) {
   if ((NSNull *)result.useCache == [NSNull null]) {
     result.useCache = nil;
   }
+  result.cacheKey = dict[@"cacheKey"];
+  if ((NSNull *)result.cacheKey == [NSNull null]) {
+    result.cacheKey = nil;
+  }
   return result;
 }
 - (NSDictionary *)toMap {
@@ -124,7 +128,8 @@ static NSDictionary *wrapResult(NSDictionary *result, FlutterError *error) {
                                    @"packageName",
                                    (self.formatHint ? self.formatHint : [NSNull null]),
                                    @"formatHint", (self.useCache ? self.useCache : [NSNull null]),
-                                   @"useCache", nil];
+                                   @"useCache", (self.cacheKey ? self.cacheKey : [NSNull null]), @"cacheKey",
+                                   nil];
 }
 @end
 
