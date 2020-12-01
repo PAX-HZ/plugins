@@ -20,6 +20,10 @@ static NSDictionary *wrapResult(NSDictionary *result, FlutterError *error) {
                                                     errorDict, @"error", nil];
 }
 
+@interface FLTInitializeMessage ()
++ (FLTInitializeMessage *)fromMap:(NSDictionary *)dict;
+- (NSDictionary *)toMap;
+@end
 @interface FLTTextureMessage ()
 + (FLTTextureMessage *)fromMap:(NSDictionary *)dict;
 - (NSDictionary *)toMap;
@@ -49,6 +53,28 @@ static NSDictionary *wrapResult(NSDictionary *result, FlutterError *error) {
 - (NSDictionary *)toMap;
 @end
 
+@implementation FLTInitializeMessage
++ (FLTInitializeMessage *)fromMap:(NSDictionary *)dict {
+  FLTInitializeMessage *result = [[FLTInitializeMessage alloc] init];
+  result.maxCacheSize = dict[@"maxCacheSize"];
+  if ((NSNull *)result.maxCacheSize == [NSNull null]) {
+    result.maxCacheSize = nil;
+  }
+  result.maxCacheFileSize = dict[@"maxCacheFileSize"];
+  if ((NSNull *)result.maxCacheFileSize == [NSNull null]) {
+    result.maxCacheFileSize = nil;
+  }
+  return result;
+}
+- (NSDictionary *)toMap {
+  return [NSDictionary
+      dictionaryWithObjectsAndKeys:(self.maxCacheSize ? self.maxCacheSize : [NSNull null]),
+                                   @"maxCacheSize",
+                                   (self.maxCacheFileSize ? self.maxCacheFileSize : [NSNull null]),
+                                   @"maxCacheFileSize", nil];
+}
+@end
+
 @implementation FLTTextureMessage
 + (FLTTextureMessage *)fromMap:(NSDictionary *)dict {
   FLTTextureMessage *result = [[FLTTextureMessage alloc] init];
@@ -59,9 +85,9 @@ static NSDictionary *wrapResult(NSDictionary *result, FlutterError *error) {
   return result;
 }
 - (NSDictionary *)toMap {
-  return [NSDictionary
-      dictionaryWithObjectsAndKeys:(self.textureId != nil ? self.textureId : [NSNull null]),
-                                   @"textureId", nil];
+  return
+      [NSDictionary dictionaryWithObjectsAndKeys:(self.textureId ? self.textureId : [NSNull null]),
+                                                 @"textureId", nil];
 }
 @end
 
@@ -84,6 +110,14 @@ static NSDictionary *wrapResult(NSDictionary *result, FlutterError *error) {
   if ((NSNull *)result.formatHint == [NSNull null]) {
     result.formatHint = nil;
   }
+  result.useCache = dict[@"useCache"];
+  if ((NSNull *)result.useCache == [NSNull null]) {
+    result.useCache = nil;
+  }
+  result.cacheKey = dict[@"cacheKey"];
+  if ((NSNull *)result.cacheKey == [NSNull null]) {
+    result.cacheKey = nil;
+  }
   return result;
 }
 - (NSDictionary *)toMap {
@@ -93,7 +127,9 @@ static NSDictionary *wrapResult(NSDictionary *result, FlutterError *error) {
                                    (self.packageName ? self.packageName : [NSNull null]),
                                    @"packageName",
                                    (self.formatHint ? self.formatHint : [NSNull null]),
-                                   @"formatHint", nil];
+                                   @"formatHint", (self.useCache ? self.useCache : [NSNull null]),
+                                   @"useCache", (self.cacheKey ? self.cacheKey : [NSNull null]), @"cacheKey",
+                                   nil];
 }
 @end
 
@@ -112,10 +148,9 @@ static NSDictionary *wrapResult(NSDictionary *result, FlutterError *error) {
 }
 - (NSDictionary *)toMap {
   return [NSDictionary
-      dictionaryWithObjectsAndKeys:(self.textureId != nil ? self.textureId : [NSNull null]),
-                                   @"textureId",
-                                   (self.isLooping != nil ? self.isLooping : [NSNull null]),
-                                   @"isLooping", nil];
+      dictionaryWithObjectsAndKeys:(self.textureId ? self.textureId : [NSNull null]), @"textureId",
+                                   (self.isLooping ? self.isLooping : [NSNull null]), @"isLooping",
+                                   nil];
 }
 @end
 
@@ -134,9 +169,8 @@ static NSDictionary *wrapResult(NSDictionary *result, FlutterError *error) {
 }
 - (NSDictionary *)toMap {
   return [NSDictionary
-      dictionaryWithObjectsAndKeys:(self.textureId != nil ? self.textureId : [NSNull null]),
-                                   @"textureId", (self.volume != nil ? self.volume : [NSNull null]),
-                                   @"volume", nil];
+      dictionaryWithObjectsAndKeys:(self.textureId ? self.textureId : [NSNull null]), @"textureId",
+                                   (self.volume ? self.volume : [NSNull null]), @"volume", nil];
 }
 @end
 
@@ -155,9 +189,8 @@ static NSDictionary *wrapResult(NSDictionary *result, FlutterError *error) {
 }
 - (NSDictionary *)toMap {
   return [NSDictionary
-      dictionaryWithObjectsAndKeys:(self.textureId != nil ? self.textureId : [NSNull null]),
-                                   @"textureId", (self.speed != nil ? self.speed : [NSNull null]),
-                                   @"speed", nil];
+      dictionaryWithObjectsAndKeys:(self.textureId ? self.textureId : [NSNull null]), @"textureId",
+                                   (self.speed ? self.speed : [NSNull null]), @"speed", nil];
 }
 @end
 
@@ -176,10 +209,9 @@ static NSDictionary *wrapResult(NSDictionary *result, FlutterError *error) {
 }
 - (NSDictionary *)toMap {
   return [NSDictionary
-      dictionaryWithObjectsAndKeys:(self.textureId != nil ? self.textureId : [NSNull null]),
-                                   @"textureId",
-                                   (self.position != nil ? self.position : [NSNull null]),
-                                   @"position", nil];
+      dictionaryWithObjectsAndKeys:(self.textureId ? self.textureId : [NSNull null]), @"textureId",
+                                   (self.position ? self.position : [NSNull null]), @"position",
+                                   nil];
 }
 @end
 
@@ -194,7 +226,7 @@ static NSDictionary *wrapResult(NSDictionary *result, FlutterError *error) {
 }
 - (NSDictionary *)toMap {
   return [NSDictionary
-      dictionaryWithObjectsAndKeys:(self.mixWithOthers != nil ? self.mixWithOthers : [NSNull null]),
+      dictionaryWithObjectsAndKeys:(self.mixWithOthers ? self.mixWithOthers : [NSNull null]),
                                    @"mixWithOthers", nil];
 }
 @end
@@ -207,7 +239,8 @@ void FLTVideoPlayerApiSetup(id<FlutterBinaryMessenger> binaryMessenger, id<FLTVi
     if (api) {
       [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
         FlutterError *error;
-        [api initialize:&error];
+        FLTInitializeMessage *input = [FLTInitializeMessage fromMap:message];
+        [api initialize:input error:&error];
         callback(wrapResult(nil, error));
       }];
     } else {

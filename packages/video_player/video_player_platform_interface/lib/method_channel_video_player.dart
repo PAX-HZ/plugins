@@ -16,8 +16,11 @@ class MethodChannelVideoPlayer extends VideoPlayerPlatform {
   VideoPlayerApi _api = VideoPlayerApi();
 
   @override
-  Future<void> init() {
-    return _api.initialize();
+  Future<void> init(int maxCacheSize, int maxCacheFileSize) {
+    InitializeMessage message = InitializeMessage();
+    message.maxCacheSize = maxCacheSize;
+    message.maxCacheFileSize = maxCacheFileSize;
+    return _api.initialize(message);
   }
 
   @override
@@ -37,6 +40,8 @@ class MethodChannelVideoPlayer extends VideoPlayerPlatform {
       case DataSourceType.network:
         message.uri = dataSource.uri;
         message.formatHint = _videoFormatStringMap[dataSource.formatHint];
+        message.useCache = dataSource.useCache;
+        message.cacheKey = dataSource.cacheKey;
         break;
       case DataSourceType.file:
         message.uri = dataSource.uri;

@@ -13,6 +13,53 @@ import java.util.HashMap;
 public class Messages {
 
   /** Generated class from Pigeon that represents data sent in messages. */
+  public static class InitializeMessage {
+    private Long maxCacheSize;
+
+    public Long getMaxCacheSize() {
+      return maxCacheSize;
+    }
+
+    public void setMaxCacheSize(Long setterArg) {
+      this.maxCacheSize = setterArg;
+    }
+
+    private Long maxCacheFileSize;
+
+    public Long getMaxCacheFileSize() {
+      return maxCacheFileSize;
+    }
+
+    public void setMaxCacheFileSize(Long setterArg) {
+      this.maxCacheFileSize = setterArg;
+    }
+
+    HashMap toMap() {
+      HashMap<String, Object> toMapResult = new HashMap<>();
+      toMapResult.put("maxCacheSize", maxCacheSize);
+      toMapResult.put("maxCacheFileSize", maxCacheFileSize);
+      return toMapResult;
+    }
+
+    static InitializeMessage fromMap(HashMap map) {
+      InitializeMessage fromMapResult = new InitializeMessage();
+      Object maxCacheSize = map.get("maxCacheSize");
+      fromMapResult.maxCacheSize =
+          (maxCacheSize == null)
+              ? null
+              : ((maxCacheSize instanceof Integer) ? (Integer) maxCacheSize : (Long) maxCacheSize);
+      Object maxCacheFileSize = map.get("maxCacheFileSize");
+      fromMapResult.maxCacheFileSize =
+          (maxCacheFileSize == null)
+              ? null
+              : ((maxCacheFileSize instanceof Integer)
+                  ? (Integer) maxCacheFileSize
+                  : (Long) maxCacheFileSize);
+      return fromMapResult;
+    }
+  }
+
+  /** Generated class from Pigeon that represents data sent in messages. */
   public static class TextureMessage {
     private Long textureId;
 
@@ -83,12 +130,34 @@ public class Messages {
       this.formatHint = setterArg;
     }
 
+    private Boolean useCache;
+
+    public Boolean getUseCache() {
+      return useCache;
+    }
+
+    public void setUseCache(Boolean setterArg) {
+      this.useCache = setterArg;
+    }
+
+    private String cacheKey;
+
+    public String getCacheKey() {
+      return cacheKey;
+    }
+
+    public void setCacheKey(String cacheKey) {
+      this.cacheKey = cacheKey;
+    }
+
     HashMap toMap() {
       HashMap<String, Object> toMapResult = new HashMap<>();
       toMapResult.put("asset", asset);
       toMapResult.put("uri", uri);
       toMapResult.put("packageName", packageName);
       toMapResult.put("formatHint", formatHint);
+      toMapResult.put("useCache", useCache);
+      toMapResult.put("cacheKey", cacheKey);
       return toMapResult;
     }
 
@@ -102,6 +171,10 @@ public class Messages {
       fromMapResult.packageName = (String) packageName;
       Object formatHint = map.get("formatHint");
       fromMapResult.formatHint = (String) formatHint;
+      Object useCache = map.get("useCache");
+      fromMapResult.useCache = (Boolean) useCache;
+      Object cacheKey = map.get("cacheKey");
+      fromMapResult.cacheKey = (String) cacheKey;
       return fromMapResult;
     }
   }
@@ -305,7 +378,7 @@ public class Messages {
 
   /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
   public interface VideoPlayerApi {
-    void initialize();
+    void initialize(InitializeMessage arg);
 
     TextureMessage create(CreateMessage arg);
 
@@ -340,7 +413,9 @@ public class Messages {
               (message, reply) -> {
                 HashMap<String, HashMap> wrapped = new HashMap<>();
                 try {
-                  api.initialize();
+                  @SuppressWarnings("ConstantConditions")
+                  InitializeMessage input = InitializeMessage.fromMap((HashMap) message);
+                  api.initialize(input);
                   wrapped.put("result", null);
                 } catch (Exception exception) {
                   wrapped.put("error", wrapError(exception));

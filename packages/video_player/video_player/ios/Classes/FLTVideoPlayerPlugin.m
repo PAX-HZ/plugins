@@ -5,6 +5,7 @@
 #import "FLTVideoPlayerPlugin.h"
 #import <AVFoundation/AVFoundation.h>
 #import <GLKit/GLKit.h>
+#import "VIMediaCache.h"
 #import "messages.h"
 
 #if !__has_feature(objc_arc)
@@ -51,6 +52,7 @@ int64_t FLTCMTimeToMillis(CMTime time) {
 - (void)pause;
 - (void)setIsLooping:(bool)isLooping;
 - (void)updatePlayingState;
++ (VIResourceLoaderManager*)resourceLoaderManager;
 @end
 
 static void* timeRangeContext = &timeRangeContext;
@@ -163,8 +165,30 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
 }
 
 - (instancetype)initWithURL:(NSURL*)url frameUpdater:(FLTFrameUpdater*)frameUpdater {
-  AVPlayerItem* item = [AVPlayerItem playerItemWithURL:url];
+  return [self initWithURL:url frameUpdater:frameUpdater enableCache:NO cacheKey:@""];
+}
+
+- (instancetype)initWithURL:(NSURL*)url
+               frameUpdater:(FLTFrameUpdater*)frameUpdater
+                enableCache:(BOOL)enableCache
+                   cacheKey:(NSString*) cacheKey {
+  AVPlayerItem* item;
+  if (enableCache) {
+    NSLog(@"initWithURL User cache");
+    item = [[FLTVideoPlayer resourceLoaderManager] playerItemWithURL:url key: cacheKey];
+  } else {
+    NSLog(@"initWithURL Not User cache");
+    item = [AVPlayerItem playerItemWithURL:url];
+  }
   return [self initWithPlayerItem:item frameUpdater:frameUpdater];
+}
+
++ (VIResourceLoaderManager*)resourceLoaderManager {
+  static VIResourceLoaderManager* resourceLoaderManager = nil;
+  if (resourceLoaderManager == nil) {
+    resourceLoaderManager = [VIResourceLoaderManager new];
+  }
+  return resourceLoaderManager;
 }
 
 - (CGAffineTransform)fixTransform:(AVAssetTrack*)videoTrack {
@@ -450,6 +474,8 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
 @property(readonly, weak, nonatomic) NSObject<FlutterBinaryMessenger>* messenger;
 @property(readonly, strong, nonatomic) NSMutableDictionary* players;
 @property(readonly, strong, nonatomic) NSObject<FlutterPluginRegistrar>* registrar;
+@property(readonly, nonatomic) long maxCacheSize;
+@property(readonly, nonatomic) long maxCacheFileSize;
 @end
 
 @implementation FLTVideoPlayerPlugin
@@ -497,7 +523,7 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
   return result;
 }
 
-- (void)initialize:(FlutterError* __autoreleasing*)error {
+- (void)initialize:(FLTInitializeMessage*)input error:(FlutterError**)error {
   // Allow audio playback when the Ring/Silent switch is set to silent
   [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:nil];
 
@@ -506,6 +532,8 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
     [_players[textureId] dispose];
   }
   [_players removeAllObjects];
+  _maxCacheSize = [input.maxCacheSize longValue];
+  _maxCacheFileSize = [input.maxCacheFileSize longValue];
 }
 
 - (FLTTextureMessage*)create:(FLTCreateMessage*)input error:(FlutterError**)error {
@@ -521,8 +549,26 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
     player = [[FLTVideoPlayer alloc] initWithAsset:assetPath frameUpdater:frameUpdater];
     return [self onPlayerSetup:player frameUpdater:frameUpdater];
   } else if (input.uri) {
-    player = [[FLTVideoPlayer alloc] initWithURL:[NSURL URLWithString:input.uri]
-                                    frameUpdater:frameUpdater];
+    BOOL useCache = input.useCache;
+    BOOL enableCache = _maxCacheSize > 0 && _maxCacheFileSize > 0 && useCache;
+    NSLog(@"Loading Url : %@", input.uri);
+    NSLog(@"Loading params : %d , %@", useCache, input.cacheKey);
+    if (enableCache) {
+      NSLog(@"User cache");
+      // NSString* escapedURL = [input.uri
+      //     stringByAddingPercentEncodingWithAllowedCharacters:NSMutableCharacterSet
+      //                                                            .alphanumericCharacterSet];
+      // NSLog(@"Loading Url : %@", escapedURL);
+
+      player = [[FLTVideoPlayer alloc] initWithURL:[NSURL URLWithString:input.uri]
+                                      frameUpdater:frameUpdater
+                                       enableCache:enableCache
+                                          cacheKey:input.cacheKey];
+    } else {
+      NSLog(@"Not user cache");
+      player = [[FLTVideoPlayer alloc] initWithURL:[NSURL URLWithString:input.uri]
+                                      frameUpdater:frameUpdater];
+    }
     return [self onPlayerSetup:player frameUpdater:frameUpdater];
   } else {
     *error = [FlutterError errorWithCode:@"video_player" message:@"not implemented" details:nil];

@@ -6,6 +6,29 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'dart:typed_data' show Uint8List, Int32List, Int64List, Float64List;
 
+class InitializeMessage {
+  int maxCacheSize;
+  int maxCacheFileSize;
+  // ignore: unused_element
+  Map<dynamic, dynamic> _toMap() {
+    final Map<dynamic, dynamic> pigeonMap = <dynamic, dynamic>{};
+    pigeonMap['maxCacheSize'] = maxCacheSize;
+    pigeonMap['maxCacheFileSize'] = maxCacheFileSize;
+    return pigeonMap;
+  }
+
+  // ignore: unused_element
+  static InitializeMessage _fromMap(Map<dynamic, dynamic> pigeonMap) {
+    if (pigeonMap == null) {
+      return null;
+    }
+    final InitializeMessage result = InitializeMessage();
+    result.maxCacheSize = pigeonMap['maxCacheSize'];
+    result.maxCacheFileSize = pigeonMap['maxCacheFileSize'];
+    return result;
+  }
+}
+
 class TextureMessage {
   int textureId;
   // ignore: unused_element
@@ -31,6 +54,8 @@ class CreateMessage {
   String uri;
   String packageName;
   String formatHint;
+  bool useCache;
+  String cacheKey;
   // ignore: unused_element
   Map<dynamic, dynamic> _toMap() {
     final Map<dynamic, dynamic> pigeonMap = <dynamic, dynamic>{};
@@ -38,6 +63,8 @@ class CreateMessage {
     pigeonMap['uri'] = uri;
     pigeonMap['packageName'] = packageName;
     pigeonMap['formatHint'] = formatHint;
+    pigeonMap['useCache'] = useCache;
+    pigeonMap['cacheKey'] = cacheKey;
     return pigeonMap;
   }
 
@@ -51,6 +78,8 @@ class CreateMessage {
     result.uri = pigeonMap['uri'];
     result.packageName = pigeonMap['packageName'];
     result.formatHint = pigeonMap['formatHint'];
+    result.useCache = pigeonMap['useCache'];
+    result.cacheKey = pigeonMap['cacheKey'];
     return result;
   }
 }
@@ -168,11 +197,12 @@ class MixWithOthersMessage {
 }
 
 class VideoPlayerApi {
-  Future<void> initialize() async {
+  Future<void> initialize(InitializeMessage arg) async {
+    final Map<dynamic, dynamic> requestMap = arg._toMap();
     const BasicMessageChannel<dynamic> channel = BasicMessageChannel<dynamic>(
         'dev.flutter.pigeon.VideoPlayerApi.initialize', StandardMessageCodec());
 
-    final Map<dynamic, dynamic> replyMap = await channel.send(null);
+    final Map<dynamic, dynamic> replyMap = await channel.send(requestMap);
     if (replyMap == null) {
       throw PlatformException(
           code: 'channel-error',
@@ -413,7 +443,7 @@ class VideoPlayerApi {
 }
 
 abstract class TestHostVideoPlayerApi {
-  void initialize();
+  void initialize(InitializeMessage arg);
   TextureMessage create(CreateMessage arg);
   void dispose(TextureMessage arg);
   void setLooping(LoopingMessage arg);
@@ -430,7 +460,10 @@ abstract class TestHostVideoPlayerApi {
           'dev.flutter.pigeon.VideoPlayerApi.initialize',
           StandardMessageCodec());
       channel.setMockMessageHandler((dynamic message) async {
-        api.initialize();
+        final Map<dynamic, dynamic> mapMessage =
+            message as Map<dynamic, dynamic>;
+        final InitializeMessage input = InitializeMessage._fromMap(mapMessage);
+        api.initialize(input);
         return <dynamic, dynamic>{};
       });
     }

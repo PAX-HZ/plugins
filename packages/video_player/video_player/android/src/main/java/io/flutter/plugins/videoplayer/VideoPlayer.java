@@ -6,6 +6,7 @@ import static com.google.android.exoplayer2.Player.REPEAT_MODE_OFF;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Build;
+import android.util.Log;
 import android.view.Surface;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlaybackException;
@@ -27,12 +28,19 @@ import com.google.android.exoplayer2.source.smoothstreaming.SsMediaSource;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
+import com.google.android.exoplayer2.upstream.FileDataSource;
+import com.google.android.exoplayer2.upstream.cache.CacheDataSink;
+import com.google.android.exoplayer2.upstream.cache.CacheDataSource;
+import com.google.android.exoplayer2.upstream.cache.LeastRecentlyUsedCacheEvictor;
+import com.google.android.exoplayer2.upstream.cache.SimpleCache;
 import com.google.android.exoplayer2.util.Util;
 import io.flutter.plugin.common.EventChannel;
 import io.flutter.view.TextureRegistry;
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -59,16 +67,23 @@ final class VideoPlayer {
 
   private final VideoPlayerOptions options;
 
+  private String cacheKey;
+
   VideoPlayer(
       Context context,
       EventChannel eventChannel,
       TextureRegistry.SurfaceTextureEntry textureEntry,
       String dataSource,
       String formatHint,
-      VideoPlayerOptions options) {
+      VideoPlayerOptions options,
+      long maxCacheSize,
+      long maxCacheFileSize,
+      boolean useCache,
+      String cacheKey) {
     this.eventChannel = eventChannel;
     this.textureEntry = textureEntry;
     this.options = options;
+    this.cacheKey = cacheKey;
 
     TrackSelector trackSelector = new DefaultTrackSelector();
     exoPlayer = ExoPlayerFactory.newSimpleInstance(context, trackSelector);
@@ -84,6 +99,10 @@ final class VideoPlayer {
               DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
               DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS,
               true);
+      if (useCache && maxCacheSize > 0 && maxCacheFileSize > 0) {
+        dataSourceFactory =
+            new CacheDataSourceFactory(context, maxCacheSize, maxCacheFileSize, dataSourceFactory);
+      }
     } else {
       dataSourceFactory = new DefaultDataSourceFactory(context, "ExoPlayer");
     }
@@ -126,6 +145,8 @@ final class VideoPlayer {
           break;
       }
     }
+    Log.w("justin", "buildMediaSource Type:" + type);
+    Log.w("justin", "buildMediaSource cacheKey:" + cacheKey);
     switch (type) {
       case C.TYPE_SS:
         return new SsMediaSource.Factory(
@@ -142,6 +163,7 @@ final class VideoPlayer {
       case C.TYPE_OTHER:
         return new ExtractorMediaSource.Factory(mediaDataSourceFactory)
             .setExtractorsFactory(new DefaultExtractorsFactory())
+                .setCustomCacheKey(cacheKey)
             .createMediaSource(uri);
       default:
         {
@@ -285,6 +307,44 @@ final class VideoPlayer {
     }
     if (exoPlayer != null) {
       exoPlayer.release();
+    }
+  }
+
+  static class CacheDataSourceFactory implements DataSource.Factory {
+    private final Context context;
+    private final DefaultDataSourceFactory defaultDatasourceFactory;
+    private final long maxFileSize, maxCacheSize;
+    private static SimpleCache downloadCache;
+
+    CacheDataSourceFactory(
+        Context context,
+        long maxCacheSize,
+        long maxFileSize,
+        DataSource.Factory upstreamDataSource) {
+      super();
+      this.context = context;
+      this.maxCacheSize = maxCacheSize;
+      this.maxFileSize = maxFileSize;
+      DefaultBandwidthMeter bandwidthMeter = new DefaultBandwidthMeter();
+      defaultDatasourceFactory =
+          new DefaultDataSourceFactory(this.context, bandwidthMeter, upstreamDataSource);
+    }
+
+    @Override
+    public DataSource createDataSource() {
+      LeastRecentlyUsedCacheEvictor evictor = new LeastRecentlyUsedCacheEvictor(maxCacheSize);
+
+      if (downloadCache == null) {
+        downloadCache = new SimpleCache(new File(context.getCacheDir(), "video"), evictor);
+      }
+
+      return new CacheDataSource(
+          downloadCache,
+          defaultDatasourceFactory.createDataSource(),
+          new FileDataSource(),
+          new CacheDataSink(downloadCache, maxFileSize),
+          CacheDataSource.FLAG_BLOCK_ON_CACHE | CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR,
+          null);
     }
   }
 }
