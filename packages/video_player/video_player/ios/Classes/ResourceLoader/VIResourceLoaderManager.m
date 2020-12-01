@@ -49,7 +49,8 @@ static NSString *kCacheScheme = @"__VIMediaCache___:";
             NSString *originStr = [resourceURL absoluteString];
             originStr = [originStr stringByReplacingOccurrencesOfString:kCacheScheme withString:@""];
             originURL = [NSURL URLWithString:originStr];
-            loader = [[VIResourceLoader alloc] initWithURL:originURL key:self.key];
+            // loader = [[VIResourceLoader alloc] initWithURL:originURL key:self.key];
+            loader = [[VIResourceLoader alloc] initWithURL:originURL];
             loader.delegate = self;
             NSString *key = [self keyForResourceLoaderWithURL:resourceURL];
             self.loaders[key] = loader;
@@ -57,7 +58,7 @@ static NSString *kCacheScheme = @"__VIMediaCache___:";
         [loader addRequest:loadingRequest];
         return YES;
     }
-    
+
     return NO;
 }
 
