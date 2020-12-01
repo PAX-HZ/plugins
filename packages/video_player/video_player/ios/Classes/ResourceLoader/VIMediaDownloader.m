@@ -164,7 +164,7 @@ didCompleteWithError:(nullable NSError *)error {
     if (!_sessionDelegateObject) {
         _sessionDelegateObject = [[VIURLSessionDelegateObject alloc] initWithDelegate:self];
     }
-    
+
     return _sessionDelegateObject;
 }
 
@@ -181,7 +181,7 @@ didCompleteWithError:(nullable NSError *)error {
     if (self.isCancelled) {
         return;
     }
-    
+
     VICacheAction *action = [self.actions firstObject];
     if (!action) {
         if ([self.delegate respondsToSelector:@selector(actionWorker:didFinishWithError:)]) {
@@ -190,7 +190,7 @@ didCompleteWithError:(nullable NSError *)error {
         return;
     }
     [self.actions removeObjectAtIndex:0];
-    
+
     if (action.actionType == VICacheAtionTypeLocal) {
         NSError *error;
         NSData *data = [self.cacheWorker cachedDataForRange:action.range error:&error];
@@ -228,7 +228,7 @@ didCompleteWithError:(nullable NSError *)error {
                                                           userInfo:@{
                                                                      VICacheConfigurationKey: configuration,
                                                                      }];
-            
+
         if (finished && configuration.progress >= 1.0) {
             [self notifyDownloadFinishedWithError:nil];
         }
@@ -240,7 +240,7 @@ didCompleteWithError:(nullable NSError *)error {
     NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
     [userInfo setValue:configuration forKey:VICacheConfigurationKey];
     [userInfo setValue:error forKey:VICacheFinishedErrorKey];
-    
+
     [[NSNotificationCenter defaultCenter] postNotificationName:VICacheManagerDidFinishCacheNotification
                                                         object:self
                                                       userInfo:userInfo];
@@ -249,6 +249,10 @@ didCompleteWithError:(nullable NSError *)error {
 #pragma mark - VIURLSessionDelegateObjectDelegate
 
 - (void)URLSession:(NSURLSession *)session didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition, NSURLCredential * _Nullable))completionHandler {
+    NSLog(@"URLSession");
+    if ([challenge.protectionSpace.authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust]) {
+        [[challenge sender] useCredential:[NSURLCredential credentialForTrust:challenge.protectionSpace.serverTrust] forAuthenticationChallenge:challenge];
+    }
     NSURLCredential *card = [[NSURLCredential alloc] initWithTrust:challenge.protectionSpace.serverTrust];
     completionHandler(NSURLSessionAuthChallengeUseCredential,card);
 }
@@ -280,7 +284,7 @@ didReceiveResponse:(NSURLResponse *)response
     if (self.isCancelled) {
         return;
     }
-    
+
     if (self.canSaveToCache) {
         NSRange range = NSMakeRange(self.startOffset, data.length);
         NSError *error;
@@ -293,12 +297,12 @@ didReceiveResponse:(NSURLResponse *)response
         }
         [self.cacheWorker save];
     }
-    
+
     self.startOffset += data.length;
     if ([self.delegate respondsToSelector:@selector(actionWorker:didReceiveData:isLocal:)]) {
         [self.delegate actionWorker:self didReceiveData:data isLocal:NO];
     }
-    
+
     [self notifyDownloadProgressWithFlush:NO finished:NO];
 }
 
@@ -340,7 +344,7 @@ didCompleteWithError:(nullable NSError *)error {
         instance = [[self alloc] init];
         instance.downloadingURLS = [NSMutableSet set];
     });
-    
+
     return instance;
 }
 
@@ -405,11 +409,11 @@ didCompleteWithError:(nullable NSError *)error {
                          toEnd:(BOOL)toEnd {
     // ---
     NSRange range = NSMakeRange((NSUInteger)fromOffset, length);
-    
+
     if (toEnd) {
         range.length = (NSUInteger)self.cacheWorker.cacheConfiguration.contentInfo.contentLength - range.location;
     }
-    
+
     NSArray *actions = [self.cacheWorker cachedDataActionsForRange:range];
 
     self.actionWorker = [[VIActionWorker alloc] initWithActions:actions url:self.url cacheWorker:self.cacheWorker];
@@ -442,7 +446,7 @@ didCompleteWithError:(nullable NSError *)error {
 - (void)actionWorker:(VIActionWorker *)actionWorker didReceiveResponse:(NSURLResponse *)response {
     if (!self.info) {
         VIContentInfo *info = [VIContentInfo new];
-        
+
         if ([response isKindOfClass:[NSHTTPURLResponse class]]) {
             NSHTTPURLResponse *HTTPURLResponse = (NSHTTPURLResponse *)response;
             NSString *acceptRange = HTTPURLResponse.allHeaderFields[@"Accept-Ranges"];
@@ -453,7 +457,7 @@ didCompleteWithError:(nullable NSError *)error {
         CFStringRef contentType = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, (__bridge CFStringRef)(mimeType), NULL);
         info.contentType = CFBridgingRelease(contentType);
         self.info = info;
-        
+
         NSError *error;
         [self.cacheWorker setContentInfo:info error:&error];
         if (error) {
@@ -463,7 +467,7 @@ didCompleteWithError:(nullable NSError *)error {
             return;
         }
     }
-    
+
     if ([self.delegate respondsToSelector:@selector(mediaDownloader:didReceiveResponse:)]) {
         [self.delegate mediaDownloader:self didReceiveResponse:response];
     }
@@ -477,7 +481,7 @@ didCompleteWithError:(nullable NSError *)error {
 
 - (void)actionWorker:(VIActionWorker *)actionWorker didFinishWithError:(NSError *)error {
     [[VIMediaDownloaderStatus shared] removeURL:self.url];
-    
+
     if (!error && self.downloadToEnd) {
         self.downloadToEnd = NO;
         [self downloadTaskFromOffset:2 length:(NSUInteger)(self.cacheWorker.cacheConfiguration.contentInfo.contentLength - 2) toEnd:YES];
