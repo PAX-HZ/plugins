@@ -175,7 +175,7 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
   AVPlayerItem* item;
   if (enableCache) {
     NSLog(@"initWithURL User cache");
-    item = [[FLTVideoPlayer resourceLoaderManager] playerItemWithURL:url key: cacheKey];
+    item = [[FLTVideoPlayer resourceLoaderManager] playerItemWithURL:url];
   } else {
     NSLog(@"initWithURL Not User cache");
     item = [AVPlayerItem playerItemWithURL:url];
