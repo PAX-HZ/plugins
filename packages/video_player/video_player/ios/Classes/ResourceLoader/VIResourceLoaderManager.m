@@ -14,7 +14,8 @@ static NSString *kCacheScheme = @"__VIMediaCache___:";
 @interface VIResourceLoaderManager () <VIResourceLoaderDelegate>
 
 @property (nonatomic, strong) NSMutableDictionary<id<NSCoding>, VIResourceLoader *> *loaders;
-@property (nonatomic, strong) NSString *key;
+@property (nonatomic, strong) NSMutableDictionary<NSString *, NSString *> *cacheMap;
+
 @end
 
 @implementation VIResourceLoaderManager
@@ -23,6 +24,7 @@ static NSString *kCacheScheme = @"__VIMediaCache___:";
     self = [super init];
     if (self) {
         _loaders = [NSMutableDictionary dictionary];
+        _cacheMap = [NSMutableDictionary dictionary];
     }
     return self;
 }
@@ -49,8 +51,13 @@ static NSString *kCacheScheme = @"__VIMediaCache___:";
             NSString *originStr = [resourceURL absoluteString];
             originStr = [originStr stringByReplacingOccurrencesOfString:kCacheScheme withString:@""];
             originURL = [NSURL URLWithString:originStr];
-            // loader = [[VIResourceLoader alloc] initWithURL:originURL key:self.key];
-            loader = [[VIResourceLoader alloc] initWithURL:originURL];
+            NSLog(@"originStr：%@",originStr);
+            NSLog(@"self.cacheMap[originStr]：%@",self.cacheMap[originStr]);
+            if ([[_cacheMap allKeys] containsObject:originStr]) {
+                loader = [[VIResourceLoader alloc] initWithURL:originURL key:self.cacheMap[originStr]];
+            } else {
+                loader = [[VIResourceLoader alloc] initWithURL:originURL];
+            }
             loader.delegate = self;
             NSString *key = [self keyForResourceLoaderWithURL:resourceURL];
             self.loaders[key] = loader;
@@ -106,7 +113,10 @@ static NSString *kCacheScheme = @"__VIMediaCache___:";
 }
 
 - (AVPlayerItem *)playerItemWithURL:(NSURL *)url key:(NSString *)key {
-    self.key = key;
+    NSString *originStr = [url absoluteString];
+    originStr = [originStr stringByReplacingOccurrencesOfString:kCacheScheme withString:@""];
+    _cacheMap[originStr] = key;
+    NSLog(@"_cacheMap：%@",_cacheMap);
     NSURL *assetURL = [VIResourceLoaderManager assetURLWithURL:url];
     AVURLAsset *urlAsset = [AVURLAsset URLAssetWithURL:assetURL options:nil];
     [urlAsset.resourceLoader setDelegate:self queue:dispatch_get_main_queue()];
