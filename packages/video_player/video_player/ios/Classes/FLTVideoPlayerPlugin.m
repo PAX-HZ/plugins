@@ -551,22 +551,22 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
   } else if (input.uri) {
     BOOL useCache = input.useCache;
     BOOL enableCache = _maxCacheSize > 0 && _maxCacheFileSize > 0 && useCache;
-    player = [[FLTVideoPlayer alloc] initWithURL:[NSURL URLWithString:input.uri]
-                                    frameUpdater:frameUpdater];
-    // if (enableCache) {
-    //   // NSString* escapedURL = [input.uri
-    //   //     stringByAddingPercentEncodingWithAllowedCharacters:NSMutableCharacterSet
-    //   //                                                            .alphanumericCharacterSet];
-    //   // NSLog(@"Loading Url : %@", escapedURL);
-    //
-    //   player = [[FLTVideoPlayer alloc] initWithURL:[NSURL URLWithString:input.uri]
-    //                                   frameUpdater:frameUpdater
-    //                                    enableCache:enableCache
-    //                                       cacheKey:input.cacheKey];
-    // } else {
-    //   player = [[FLTVideoPlayer alloc] initWithURL:[NSURL URLWithString:input.uri]
-    //                                   frameUpdater:frameUpdater];
-    // }
+    // player = [[FLTVideoPlayer alloc] initWithURL:[NSURL URLWithString:input.uri]
+    //                                 frameUpdater:frameUpdater];
+    if (enableCache) {
+      // NSString* escapedURL = [input.uri
+      //     stringByAddingPercentEncodingWithAllowedCharacters:NSMutableCharacterSet
+      //                                                            .alphanumericCharacterSet];
+      // NSLog(@"Loading Url : %@", escapedURL);
+
+      player = [[FLTVideoPlayer alloc] initWithURL:[NSURL URLWithString:input.uri]
+                                      frameUpdater:frameUpdater
+                                       enableCache:enableCache
+                                          cacheKey:input.cacheKey];
+    } else {
+      player = [[FLTVideoPlayer alloc] initWithURL:[NSURL URLWithString:input.uri]
+                                      frameUpdater:frameUpdater];
+    }
     return [self onPlayerSetup:player frameUpdater:frameUpdater];
   } else {
     *error = [FlutterError errorWithCode:@"video_player" message:@"not implemented" details:nil];
