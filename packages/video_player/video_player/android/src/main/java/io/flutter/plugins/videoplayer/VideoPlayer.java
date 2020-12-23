@@ -145,8 +145,6 @@ final class VideoPlayer {
           break;
       }
     }
-    Log.w("justin", "buildMediaSource Type:" + type);
-    Log.w("justin", "buildMediaSource cacheKey:" + cacheKey);
     switch (type) {
       case C.TYPE_SS:
         return new SsMediaSource.Factory(
