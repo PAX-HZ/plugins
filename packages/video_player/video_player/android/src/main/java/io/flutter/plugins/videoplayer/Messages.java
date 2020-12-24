@@ -172,9 +172,15 @@ public class Messages {
       Object formatHint = map.get("formatHint");
       fromMapResult.formatHint = (String) formatHint;
       Object useCache = map.get("useCache");
-      fromMapResult.useCache = (Boolean) useCache;
+      fromMapResult.useCache =
+          (useCache == null)
+              ? false
+              : (Boolean) cacheKey;
       Object cacheKey = map.get("cacheKey");
-      fromMapResult.cacheKey = (String) cacheKey;
+      fromMapResult.cacheKey =
+          (cacheKey == null)
+              ? ''
+              : (String) cacheKey;
       return fromMapResult;
     }
   }
