@@ -175,7 +175,7 @@ public class Messages {
       fromMapResult.useCache =
           (useCache == null)
               ? false
-              : (Boolean) cacheKey;
+              : (Boolean) useCache;
       Object cacheKey = map.get("cacheKey");
       fromMapResult.cacheKey =
           (cacheKey == null)
