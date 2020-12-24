@@ -179,7 +179,7 @@ public class Messages {
       Object cacheKey = map.get("cacheKey");
       fromMapResult.cacheKey =
           (cacheKey == null)
-              ? ''
+              ? ""
               : (String) cacheKey;
       return fromMapResult;
     }
